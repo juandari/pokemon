@@ -5,6 +5,8 @@ import styled from '@emotion/styled'
 import LogoPokemon from '@components/Icons/LogoPokemon'
 import Image from 'next/image'
 import Loader from '@components/Loader'
+import { Column, Container } from '@components/StyledComponents'
+import Router from 'next/router'
 
 export const GET_POKEMON_LIST = gql`
   query pokemons($limit: Int, $offset: Int) {
@@ -24,28 +26,6 @@ export const GET_POKEMON_LIST = gql`
         dreamworld
       }
     }
-  }
-`
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 1em;
-  gap: 3em;
-
-  @media (min-width: 1024px) {
-    padding: 1em 10em;
-  }
-`
-
-const Column = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1em;
-
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr);
   }
 `
 
@@ -92,15 +72,16 @@ function PokemonList() {
       <Column>
         {loading && <Loader />}
         {pokemons?.map((pokemon) => (
-          <PokemonWrapper key={pokemon.id}>
-            <div>
-              <Image
-                src={pokemon.dreamworld}
-                alt={pokemon.name}
-                width={80}
-                height={80}
-              />
-            </div>
+          <PokemonWrapper
+            key={pokemon.id}
+            onClick={() => Router.push('/' + pokemon.name)}
+          >
+            <Image
+              src={pokemon.dreamworld}
+              alt={pokemon.name}
+              width={80}
+              height={80}
+            />
             <h3>{pokemon.name}</h3>
             <Dots>2</Dots>
           </PokemonWrapper>

@@ -1,5 +1,7 @@
 import '../styles/globals.css'
 import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client'
+import { ThemeProvider } from '@emotion/react'
+import { theme } from '@theme'
 
 const client = new ApolloClient({
   uri: 'https://graphql-pokeapi.graphcdn.app/',
@@ -9,7 +11,9 @@ const client = new ApolloClient({
 function MyApp({ Component, pageProps }) {
   return (
     <ApolloProvider client={client}>
-      <Component {...pageProps} />
+      <ThemeProvider theme={theme}>
+        <Component {...pageProps} />
+      </ThemeProvider>
     </ApolloProvider>
   )
 }
