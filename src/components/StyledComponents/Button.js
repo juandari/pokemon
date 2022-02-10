@@ -8,6 +8,10 @@ const Button = styled.button`
   color: #f5f2e7;
   font-size: 1rem;
   transition: all 0.2s ease;
+  &:disabled {
+    background-color: grey;
+    pointer-events: none;
+  }
   &:hover {
     background-color: #395b64;
     cursor: pointer;

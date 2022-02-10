@@ -1,12 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { gql, useQuery } from '@apollo/client'
 import Router from 'next/router'
+import Image from 'next/image'
 
 import LogoPokemon from '@components/Icons/LogoPokemon'
 import { Container } from '@components/StyledComponents'
-import Image from 'next/image'
-import styled from '@emotion/styled'
-import { capitalizeFirstLetter } from 'src/utils/helper'
 import Loader from '@components/Loader'
 import { useTheme } from '@emotion/react'
 import IconBack from '@components/Icons/IconBack'
@@ -14,6 +12,24 @@ import IconAttack from '@components/Icons/IconAttack'
 import IconShield from '@components/Icons/IconShield'
 import IconHealth from '@components/Icons/IconHealth'
 import Button from '@components/StyledComponents/Button'
+import Modal from '@components/Modal'
+import Input from '@components/StyledComponents/Input'
+
+import { capitalizeFirstLetter } from '@utils/helper'
+import useLocalStorage from '@hooks/useLocalStoraga'
+
+import {
+  Content,
+  Heading,
+  IconStats,
+  IconWrapper,
+  InfoWrapper,
+  MovesCard,
+  MovesWrapper,
+  Stats,
+  StatsCard,
+  StatsWrapper,
+} from './_PokemonDetail'
 
 export const GET_POKEMON_DETAIL = gql`
   query pokemon($name: String!) {
@@ -48,76 +64,6 @@ export const GET_POKEMON_DETAIL = gql`
   }
 `
 
-const InfoWrapper = styled.div`
-  align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`
-
-const Heading = styled.div`
-  align-self: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2em;
-`
-
-const IconWrapper = styled.div`
-  width: 40px;
-  position: absolute;
-  top: 25px;
-  color: #395b64;
-`
-
-const Content = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-`
-
-const StatsWrapper = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1em;
-`
-
-const StatsCard = styled.div`
-  padding: 1em;
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  background-color: white;
-`
-
-const Stats = styled.span`
-  font-weight: bold;
-  font-size: 2rem;
-`
-
-const MovesWrapper = styled.div`
-  padding: 1em;
-  border-radius: 20px;
-  display: flex;
-  gap: 0.75em;
-  background-color: white;
-  width: 100%;
-  flex-wrap: wrap;
-`
-
-const MovesCard = styled.span`
-  padding: 0.25em 1em;
-  background-color: #f5f2e7;
-  border-radius: 10px;
-`
-
-const IconStats = styled.div`
-  width: 25px;
-  color: ${(props) => props.color};
-`
-
 function randomize(delay = 500) {
   return new Promise((res) => {
     setTimeout(() => {
@@ -127,13 +73,16 @@ function randomize(delay = 500) {
 }
 
 function PokemonDetail({ name }) {
-  const { typeColors } = useTheme()
-
   const { data, loading, error } = useQuery(GET_POKEMON_DETAIL, {
     variables: {
       name,
     },
   })
+
+  const { typeColors } = useTheme()
+
+  const [nickname, setNickname] = useState('')
+  const [myPokemon, setMyPokemon] = useLocalStorage('my-pokemon', [])
 
   const types = useMemo(() => {
     return data?.pokemon?.types?.map((item) => item.type.name)
@@ -148,12 +97,9 @@ function PokemonDetail({ name }) {
    */
   const [status, setStatus] = useState('idle')
   const handleCatch = () => {
+    setStatus('loading')
     randomize(500).then((result) => setStatus(result ? 'success' : 'failed'))
   }
-
-  useEffect(() => {
-    console.log(status, 'status')
-  }, [status])
 
   const renderTypes = (types) => {
     if (!types?.length) return <Loader />
@@ -187,7 +133,31 @@ function PokemonDetail({ name }) {
     ))
   }
 
-  console.log(data, 'data')
+  const [nicknameError, setNicknameError] = useState('')
+  const handleSubmitNickname = (e) => {
+    e.preventDefault()
+
+    const nicknameExisted = myPokemon.find(
+      (pokemon) => pokemon.nickname === nickname
+    )
+
+    if (!nicknameExisted) {
+      setMyPokemon((myPokemon) => [
+        ...myPokemon,
+        {
+          id: data?.pokemon.id,
+          name,
+          nickname,
+        },
+      ])
+      setNickname('')
+      setStatus('idle')
+    } else {
+      setNicknameError('Nickname already exists')
+    }
+  }
+
+  if (error) return <p>Error getting pokemon. Please refresh the page</p>
 
   return (
     <Container>
@@ -202,7 +172,7 @@ function PokemonDetail({ name }) {
           <Loader />
         ) : (
           <Image
-            src={data?.pokemon?.sprites.front_default}
+            src={data?.pokemon?.sprites?.front_default}
             width={240}
             height={240}
             alt={name}
@@ -215,8 +185,47 @@ function PokemonDetail({ name }) {
       </InfoWrapper>
 
       <div style={{ textAlign: 'center' }}>
-        <Button onClick={handleCatch}>Catch</Button>
+        {status === 'loading' || loading ? (
+          <Loader />
+        ) : (
+          <Button onClick={handleCatch}>Catch</Button>
+        )}
       </div>
+
+      {/* FAILED CATCH MODAL */}
+      <Modal isOpen={status === 'failed'}>
+        <h4 style={{ margin: 0, color: '#f25287' }}>Failed</h4>
+        <p>
+          Catching <strong>{name && capitalizeFirstLetter(name)}</strong> failed
+        </p>
+        <div style={{ display: 'flex', gap: '0.5em' }}>
+          <Button onClick={handleCatch}>Try Again</Button>
+          <Button onClick={() => setStatus('idle')}>Close</Button>
+        </div>
+      </Modal>
+
+      {/* SUCCESS CATCH MODAL */}
+      <Modal isOpen={status === 'success'}>
+        <h4 style={{ margin: 0, color: '#8BDB81' }}>Success</h4>
+        <p>
+          Catching <strong>{name && capitalizeFirstLetter(name)}</strong>{' '}
+          successful
+        </p>
+        <form
+          onSubmit={handleSubmitNickname}
+          style={{ display: 'flex', gap: '0.5em', alignItems: 'flex-start' }}
+        >
+          <Input
+            placeholder="Nickname"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            error={nicknameError}
+          />
+          <Button type="submit" disabled={!nickname}>
+            Submit
+          </Button>
+        </form>
+      </Modal>
 
       <StatsWrapper>
         <StatsCard>

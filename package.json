@@ -19,7 +19,8 @@
     "prettier": "^2.5.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "react-infinite-scroll-component": "^6.1.0"
+    "react-infinite-scroll-component": "^6.1.0",
+    "react-modal": "^3.14.4"
   },
   "devDependencies": {
     "@commitlint/cli": "^16.1.0",

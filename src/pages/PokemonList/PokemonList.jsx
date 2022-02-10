@@ -1,12 +1,14 @@
-import React from 'react'
+import React, { useMemo } from 'react'
+import Image from 'next/image'
+import Router from 'next/router'
 import { gql, useQuery } from '@apollo/client'
-import styled from '@emotion/styled'
 
 import LogoPokemon from '@components/Icons/LogoPokemon'
-import Image from 'next/image'
 import Loader from '@components/Loader'
 import { Column, Container } from '@components/StyledComponents'
-import Router from 'next/router'
+import useLocalStorage from '@hooks/useLocalStoraga'
+
+import { Dots, PokemonWrapper } from './_PokemonList'
 
 export const GET_POKEMON_LIST = gql`
   query pokemons($limit: Int, $offset: Int) {
@@ -29,40 +31,27 @@ export const GET_POKEMON_LIST = gql`
   }
 `
 
-const PokemonWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: #dddddd;
-  padding: 1em;
-  border-radius: 1rem;
-  transition: all 0.2s ease;
-  position: relative;
-  &:hover {
-    transform: scale(1.03) translateY(-10px);
-    cursor: pointer;
-  }
-`
-
-const Dots = styled.div`
-  width: 30px;
-  height: 30px;
-  background-color: #f25287;
-  border-radius: 50%;
-  display: inline-block;
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-`
-
 function PokemonList() {
   const { data, loading, error } = useQuery(GET_POKEMON_LIST)
   const pokemons = data?.pokemons?.results
+  const [myPokemon, setMyPokemon] = useLocalStorage('my-pokemon', [])
+  console.log(myPokemon, 'myPokemon')
+
+  const catchedPokemon = useMemo(() => {
+    const result = []
+    myPokemon.reduce(function (res, value) {
+      if (!res[value.id]) {
+        res[value.id] = { id: value.id, count: 0 }
+        result.push(res[value.id])
+      }
+      res[value.id].count++
+      return res
+    }, {})
+    return result
+  }, [myPokemon])
+  console.log(catchedPokemon, 'catchedPokemon')
+
+  if (error) return <p>Error getting pokemon data. Please refresh the page.</p>
 
   return (
     <Container>
@@ -71,21 +60,24 @@ function PokemonList() {
       </div>
       <Column>
         {loading && <Loader />}
-        {pokemons?.map((pokemon) => (
-          <PokemonWrapper
-            key={pokemon.id}
-            onClick={() => Router.push('/' + pokemon.name)}
-          >
-            <Image
-              src={pokemon.dreamworld}
-              alt={pokemon.name}
-              width={80}
-              height={80}
-            />
-            <h3>{pokemon.name}</h3>
-            <Dots>2</Dots>
-          </PokemonWrapper>
-        ))}
+        {pokemons?.map((pokemon) => {
+          const catched = catchedPokemon.find((mp) => mp.id === pokemon.id)
+          return (
+            <PokemonWrapper
+              key={pokemon.id}
+              onClick={() => Router.push('/' + pokemon.name)}
+            >
+              <Image
+                src={pokemon.dreamworld}
+                alt={pokemon.name}
+                width={80}
+                height={80}
+              />
+              <h3>{pokemon.name}</h3>
+              {catched?.count && <Dots>{catched.count}</Dots>}
+            </PokemonWrapper>
+          )
+        })}
       </Column>
     </Container>
   )
