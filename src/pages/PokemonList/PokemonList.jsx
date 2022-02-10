@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react'
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import Router from 'next/router'
-import { gql, useQuery } from '@apollo/client'
+import { gql, useLazyQuery, useQuery } from '@apollo/client'
 
 import LogoPokemon from '@components/Icons/LogoPokemon'
 import Loader from '@components/Loader'
@@ -9,6 +10,7 @@ import { Column, Container } from '@components/StyledComponents'
 import useLocalStorage from '@hooks/useLocalStoraga'
 
 import { Dots, PokemonWrapper } from './_PokemonList'
+import InfiniteScroll from 'react-infinite-scroll-component'
 
 export const GET_POKEMON_LIST = gql`
   query pokemons($limit: Int, $offset: Int) {
@@ -25,17 +27,57 @@ export const GET_POKEMON_LIST = gql`
         url
         image
         name
-        dreamworld
       }
     }
   }
 `
 
+const LIMIT = 20
+const OFFSET = 0
+
 function PokemonList() {
-  const { data, loading, error } = useQuery(GET_POKEMON_LIST)
-  const pokemons = data?.pokemons?.results
-  const [myPokemon, setMyPokemon] = useLocalStorage('my-pokemon', [])
-  console.log(myPokemon, 'myPokemon')
+  const [limit, setLimit] = useState(LIMIT)
+  const [queryCount] = useLazyQuery(GET_POKEMON_LIST)
+  const [queryPokemons, { loading, error }] = useLazyQuery(GET_POKEMON_LIST)
+
+  const [pokemons, setPokemons] = useLocalStorage('pokemons', [])
+  const [pokemonsSliced, setPokemonsSlices] = useState(pokemons)
+
+  const [myPokemon] = useLocalStorage('my-pokemon', [])
+  const [pokemonsCount, setPokemonsCount] = useState(0)
+
+  // On first render, list should only be displaying 20 pokemons
+  useEffect(() => {
+    setPokemonsSlices(pokemons.slice(0, limit))
+  }, [pokemons])
+
+  // This is to get the total count pokemons
+  useEffect(() => {
+    queryCount({
+      variables: {
+        limit: 1,
+        offset: 1,
+      },
+      onCompleted: (res) => {
+        setPokemonsCount(res.pokemons.count)
+      },
+    })
+  }, [])
+
+  // This is to store pokemons in local storage
+  useEffect(() => {
+    if (!pokemons.length) {
+      queryPokemons({
+        variables: {
+          limit: pokemonsCount,
+          offset: OFFSET,
+        },
+        onCompleted: (res) => {
+          setPokemons(res.pokemons.results)
+        },
+      })
+    }
+  }, [pokemonsCount])
 
   const catchedPokemon = useMemo(() => {
     const result = []
@@ -49,7 +91,11 @@ function PokemonList() {
     }, {})
     return result
   }, [myPokemon])
-  console.log(catchedPokemon, 'catchedPokemon')
+
+  const fetchMoreData = () => {
+    setLimit((prevLimit) => prevLimit + LIMIT)
+    setPokemonsSlices(pokemons.slice(0, limit))
+  }
 
   if (error) return <p>Error getting pokemon data. Please refresh the page.</p>
 
@@ -58,27 +104,40 @@ function PokemonList() {
       <div style={{ alignSelf: 'center' }}>
         <LogoPokemon />
       </div>
-      <Column>
-        {loading && <Loader />}
-        {pokemons?.map((pokemon) => {
-          const catched = catchedPokemon.find((mp) => mp.id === pokemon.id)
-          return (
-            <PokemonWrapper
-              key={pokemon.id}
-              onClick={() => Router.push('/' + pokemon.name)}
-            >
-              <Image
-                src={pokemon.dreamworld}
-                alt={pokemon.name}
-                width={80}
-                height={80}
-              />
-              <h3>{pokemon.name}</h3>
-              {catched?.count && <Dots>{catched.count}</Dots>}
-            </PokemonWrapper>
-          )
-        })}
-      </Column>
+      <InfiniteScroll
+        dataLength={limit}
+        next={fetchMoreData}
+        hasMore={pokemonsSliced.length < pokemonsCount}
+        loader={<Loader />}
+        endMessage={
+          <p style={{ textAlign: 'center' }}>
+            <b>Yay! You have seen it all</b>
+          </p>
+        }
+        style={{ padding: '2em' }}
+      >
+        <Column>
+          {loading && <Loader />}
+          {pokemonsSliced?.map((pokemon) => {
+            const catched = catchedPokemon.find((mp) => mp.id === pokemon.id)
+            return (
+              <PokemonWrapper
+                key={pokemon.id}
+                onClick={() => Router.push('/' + pokemon.name)}
+              >
+                <Image
+                  src={pokemon.image}
+                  alt={pokemon.name}
+                  width={80}
+                  height={80}
+                />
+                <h3>{pokemon.name}</h3>
+                {catched?.count && <Dots>{catched.count}</Dots>}
+              </PokemonWrapper>
+            )
+          })}
+        </Column>
+      </InfiniteScroll>
     </Container>
   )
 }
