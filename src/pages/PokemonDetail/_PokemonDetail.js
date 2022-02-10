@@ -20,6 +20,7 @@ export const IconWrapper = styled.div`
   position: absolute;
   top: 25px;
   color: #395b64;
+  cursor: pointer;
 `
 
 export const Content = styled.div`

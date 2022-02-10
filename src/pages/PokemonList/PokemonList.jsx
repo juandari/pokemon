@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import Router from 'next/router'
-import { gql, useLazyQuery, useQuery } from '@apollo/client'
+import { gql, useLazyQuery } from '@apollo/client'
 
 import LogoPokemon from '@components/Icons/LogoPokemon'
 import Loader from '@components/Loader'
@@ -49,7 +49,7 @@ function PokemonList() {
   // On first render, list should only be displaying 20 pokemons
   useEffect(() => {
     setPokemonsSlices(pokemons.slice(0, limit))
-  }, [pokemons])
+  }, [pokemons, limit])
 
   // This is to get the total count pokemons
   useEffect(() => {
