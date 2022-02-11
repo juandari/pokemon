@@ -9,8 +9,10 @@ import Loader from '@components/Loader'
 import { Column, Container } from '@components/StyledComponents'
 import useLocalStorage from '@hooks/useLocalStoraga'
 
-import { Dots, PokemonWrapper } from './_PokemonList'
+import { Dots, TitleWrapper } from './_PokemonList'
 import InfiniteScroll from 'react-infinite-scroll-component'
+import Button from '@components/Button'
+import PokemonCard from '@components/PokemonCard'
 
 export const GET_POKEMON_LIST = gql`
   query pokemons($limit: Int, $offset: Int) {
@@ -101,9 +103,10 @@ function PokemonList() {
 
   return (
     <Container>
-      <div style={{ alignSelf: 'center' }}>
+      <TitleWrapper>
         <LogoPokemon />
-      </div>
+        <Button onClick={() => Router.push('/my-pokemon')}>My Pokemon</Button>
+      </TitleWrapper>
       <InfiniteScroll
         dataLength={limit}
         next={fetchMoreData}
@@ -121,19 +124,14 @@ function PokemonList() {
           {pokemonsSliced?.map((pokemon) => {
             const catched = catchedPokemon.find((mp) => mp.id === pokemon.id)
             return (
-              <PokemonWrapper
+              <PokemonCard
                 key={pokemon.id}
+                image={pokemon.image}
+                name={pokemon.name}
                 onClick={() => Router.push('/' + pokemon.name)}
               >
-                <Image
-                  src={pokemon.image}
-                  alt={pokemon.name}
-                  width={80}
-                  height={80}
-                />
-                <h3>{pokemon.name}</h3>
                 {catched?.count && <Dots>{catched.count}</Dots>}
-              </PokemonWrapper>
+              </PokemonCard>
             )
           })}
         </Column>

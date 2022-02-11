@@ -14,8 +14,9 @@ const Button = styled.button`
   }
   &:hover {
     background-color: #395b64;
-    cursor: pointer;
-    transform: scale(1.03) translateY(-5px);
+    cursor: ${(props) => (!props.noAnimation ? 'pointer' : 'default')};
+    transform: ${(props) =>
+      !props.noAnimation ? 'scale(1.03) translateY(-5px)' : 'none'};
   }
   &:active {
     cursor: pointer;

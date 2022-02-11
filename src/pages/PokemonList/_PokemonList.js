@@ -1,21 +1,5 @@
 import styled from '@emotion/styled'
 
-export const PokemonWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: #dddddd;
-  padding: 1em;
-  border-radius: 1rem;
-  transition: all 0.2s ease;
-  position: relative;
-  &:hover {
-    transform: scale(1.03) translateY(-10px);
-    cursor: pointer;
-  }
-`
-
 export const Dots = styled.div`
   width: 30px;
   height: 30px;
@@ -29,4 +13,11 @@ export const Dots = styled.div`
   justify-content: center;
   align-items: center;
   color: white;
+`
+
+export const TitleWrapper = styled.div`
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
 `

@@ -88,10 +88,6 @@ function PokemonDetail({ name }) {
     return data?.pokemon?.types?.map((item) => item.type.name)
   }, [data?.pokemon?.types])
 
-  const handleBack = () => {
-    Router.push('/')
-  }
-
   /**
    * TODO: refactor to custom hook
    */
@@ -147,6 +143,7 @@ function PokemonDetail({ name }) {
         {
           id: data?.pokemon.id,
           name,
+          image: data?.pokemon.sprites.front_default,
           nickname,
         },
       ])
@@ -161,10 +158,10 @@ function PokemonDetail({ name }) {
 
   return (
     <Container>
-      <IconWrapper onClick={handleBack}>
+      <IconWrapper onClick={() => Router.push('/')}>
         <IconBack />
       </IconWrapper>
-      <Heading>
+      <Heading onClick={() => Router.push('/')}>
         <LogoPokemon />
       </Heading>
       <InfoWrapper>
