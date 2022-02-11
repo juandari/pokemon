@@ -170,7 +170,11 @@ function PokemonDetail({ name }) {
       </InfoWrapper>
 
       <div style={{ textAlign: 'center' }}>
-        <Button onClick={handleCatch}>Catch</Button>
+        {status === 'loading' || loading ? (
+          <Loader />
+        ) : (
+          <Button onClick={handleCatch}>Catch</Button>
+        )}
       </div>
 
       {/* FAILED CATCH MODAL */}
@@ -235,12 +239,12 @@ function PokemonDetail({ name }) {
             }
           </Stats>
         </StatsCard>
-        <StatsCard>
+        <StatsCard data-testid="stats-health">
           <IconStats color="#4cd3a3">
             <IconHealth />
           </IconStats>
           <span style={{ color: '#395B64' }}>Health</span>
-          <Stats data-testid="stats-health">
+          <Stats>
             {
               data?.pokemon?.stats?.filter((item) => item.stat.name === 'hp')[0]
                 ?.base_stat

@@ -25,10 +25,8 @@ test('render pokemon detail with the correct title and catch button', () => {
   })
 
   const name = screen.getByRole('heading', { name: /ivysaur/i })
-  const catchBtn = screen.getByRole('button', { name: /catch/i })
 
   expect(name).toBeInTheDocument()
-  expect(catchBtn).toBeInTheDocument()
 })
 
 test('render all stats', () => {
