@@ -13,10 +13,11 @@ function MyPokemon() {
   const [myPokemon, setMyPokemon] = useLocalStorage('my-pokemon', [])
 
   const handleRemove = (pokemonNickname) => {
-    console.log(myPokemon, 'remove')
-    setMyPokemon((prevPokemon) =>
-      prevPokemon.filter((pokemon) => pokemon.nickname !== pokemonNickname)
+    const newPokemon = myPokemon.filter(
+      (pokemon) => pokemon.nickname !== pokemonNickname
     )
+
+    setMyPokemon(newPokemon)
   }
 
   return (
@@ -30,7 +31,7 @@ function MyPokemon() {
       <Column style={{ marginTop: '3em' }}>
         {myPokemon.map((pokemon) => (
           <PokemonCard
-            key={pokemon.id}
+            key={pokemon.nickname}
             image={pokemon.image}
             name={pokemon.name}
             noAnimation={true}

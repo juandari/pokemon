@@ -16,6 +16,7 @@ export const Heading = styled.div`
 `
 
 export const IconWrapper = styled.div`
+  width: 40px;
   position: absolute;
   top: 25px;
   color: #395b64;
