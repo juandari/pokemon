@@ -15,7 +15,7 @@ import Button from '@components/Button'
 import Modal from '@components/Modal'
 import Input from '@components/Input'
 
-import { capitalizeFirstLetter } from '@utils/helper'
+import { capitalizeFirstLetter, randomize } from '@utils/helper'
 import useLocalStorage from '@hooks/useLocalStoraga'
 
 import {
@@ -64,22 +64,13 @@ export const GET_POKEMON_DETAIL = gql`
   }
 `
 
-function randomize(delay = 500) {
-  return new Promise((res) => {
-    setTimeout(() => {
-      res(Math.random() > 0.5)
-    }, delay)
-  })
-}
-
 function PokemonDetail({ name }) {
+  const { typeColors } = useTheme()
   const { data, loading, error } = useQuery(GET_POKEMON_DETAIL, {
     variables: {
       name,
     },
   })
-
-  const { typeColors } = useTheme()
 
   const [nickname, setNickname] = useState('')
   const [myPokemon, setMyPokemon] = useLocalStorage('my-pokemon', [])
@@ -88,13 +79,35 @@ function PokemonDetail({ name }) {
     return data?.pokemon?.types?.map((item) => item.type.name)
   }, [data?.pokemon?.types])
 
-  /**
-   * TODO: refactor to custom hook
-   */
   const [status, setStatus] = useState('idle')
   const handleCatch = () => {
     setStatus('loading')
     randomize(500).then((result) => setStatus(result ? 'success' : 'failed'))
+  }
+
+  const [nicknameError, setNicknameError] = useState('')
+  const handleSubmitNickname = (e) => {
+    e.preventDefault()
+
+    const nicknameExisted = myPokemon.find(
+      (pokemon) => pokemon.nickname === nickname
+    )
+
+    if (!nicknameExisted) {
+      setMyPokemon((myPokemon) => [
+        ...myPokemon,
+        {
+          id: data?.pokemon.id,
+          name,
+          image: data?.pokemon.sprites.front_default,
+          nickname,
+        },
+      ])
+      setNickname('')
+      setStatus('idle')
+    } else {
+      setNicknameError('Nickname already exists')
+    }
   }
 
   const renderTypes = (types) => {
@@ -129,31 +142,6 @@ function PokemonDetail({ name }) {
     ))
   }
 
-  const [nicknameError, setNicknameError] = useState('')
-  const handleSubmitNickname = (e) => {
-    e.preventDefault()
-
-    const nicknameExisted = myPokemon.find(
-      (pokemon) => pokemon.nickname === nickname
-    )
-
-    if (!nicknameExisted) {
-      setMyPokemon((myPokemon) => [
-        ...myPokemon,
-        {
-          id: data?.pokemon.id,
-          name,
-          image: data?.pokemon.sprites.front_default,
-          nickname,
-        },
-      ])
-      setNickname('')
-      setStatus('idle')
-    } else {
-      setNicknameError('Nickname already exists')
-    }
-  }
-
   if (error) return <p>Error getting pokemon. Please refresh the page</p>
 
   return (
@@ -182,11 +170,7 @@ function PokemonDetail({ name }) {
       </InfoWrapper>
 
       <div style={{ textAlign: 'center' }}>
-        {status === 'loading' || loading ? (
-          <Loader />
-        ) : (
-          <Button onClick={handleCatch}>Catch</Button>
-        )}
+        <Button onClick={handleCatch}>Catch</Button>
       </div>
 
       {/* FAILED CATCH MODAL */}
@@ -230,7 +214,7 @@ function PokemonDetail({ name }) {
             <IconAttack />
           </IconStats>
           <span style={{ color: '#395B64' }}>Attack</span>
-          <Stats>
+          <Stats data-testid="stats-attack">
             {
               data?.pokemon?.stats?.filter(
                 (item) => item.stat.name === 'attack'
@@ -243,7 +227,7 @@ function PokemonDetail({ name }) {
             <IconShield />
           </IconStats>
           <span style={{ color: '#395B64' }}>Defense</span>
-          <Stats>
+          <Stats data-testid="stats-defense">
             {
               data?.pokemon?.stats?.filter(
                 (item) => item.stat.name === 'defense'
@@ -256,7 +240,7 @@ function PokemonDetail({ name }) {
             <IconHealth />
           </IconStats>
           <span style={{ color: '#395B64' }}>Health</span>
-          <Stats>
+          <Stats data-testid="stats-health">
             {
               data?.pokemon?.stats?.filter((item) => item.stat.name === 'hp')[0]
                 ?.base_stat

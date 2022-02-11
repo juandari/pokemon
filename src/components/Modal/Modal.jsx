@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactModal from 'react-modal'
 
-ReactModal.setAppElement('#__next')
+// ReactModal.setAppElement('#__next')
 function Modal({ children, ...restProps }) {
   return (
     <ReactModal

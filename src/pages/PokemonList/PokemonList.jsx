@@ -117,7 +117,7 @@ function PokemonList() {
             <b>Yay! You have seen it all</b>
           </p>
         }
-        style={{ padding: '2em' }}
+        style={{ padding: '2em 1em' }}
       >
         <Column>
           {loading && <Loader />}

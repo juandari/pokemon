@@ -1,4 +1,5 @@
 const nextJest = require('next/jest')
+const JsConfigPathsMapper = require('jsconfig-paths-jest-mapper')
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
@@ -11,7 +12,9 @@ const customJestConfig = {
   // setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   // if using TypeScript with a baseUrl set to the root directory then you need the below for alias' to work
   moduleDirectories: ['node_modules', '<rootDir>/'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jest-environment-jsdom',
+  moduleNameMapper: new JsConfigPathsMapper('./jsconfig.json'),
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

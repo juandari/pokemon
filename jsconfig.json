@@ -8,7 +8,9 @@
       "@hooks/*": ["src/hooks/*"],
       "@pages/*": ["src/pages/*"],
       "@utils/*": ["src/utils/*"],
-      "@theme": ["src/theme/index.js"]
+      "@theme": ["src/theme/index.js"],
+      "@mocks": ["./mocks/index.js"]
     }
-  }
+  },
+  "include": ["./jest.setup.js"]
 }
