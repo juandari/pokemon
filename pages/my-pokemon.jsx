@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import Mypokemon from '@pages/Mypokemon'
+import MyPokemon from '@pages/MyPokemon'
 
 export default function Home() {
   return (
@@ -11,7 +11,7 @@ export default function Home() {
       </Head>
 
       <main>
-        <Mypokemon />
+        <MyPokemon />
       </main>
     </div>
   )
