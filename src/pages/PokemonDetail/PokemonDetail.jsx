@@ -105,6 +105,7 @@ function PokemonDetail({ name }) {
       ])
       setNickname('')
       setStatus('idle')
+      setNicknameError('')
     } else {
       setNicknameError('Nickname already exists')
     }
