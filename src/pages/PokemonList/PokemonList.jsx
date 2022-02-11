@@ -1,10 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useState } from 'react'
-import Image from 'next/image'
 import Router from 'next/router'
 import { gql, useLazyQuery } from '@apollo/client'
 
 import LogoPokemon from '@components/Icons/LogoPokemon'
+import IconGithub from '@components/Icons/IconGithub'
 import Loader from '@components/Loader'
 import { Column, Container } from '@components/StyledComponents'
 import useLocalStorage from '@hooks/useLocalStoraga'
@@ -13,6 +13,7 @@ import { Dots, TitleWrapper } from './_PokemonList'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import Button from '@components/Button'
 import PokemonCard from '@components/PokemonCard'
+import { IconWrapper } from '../PokemonDetail/_PokemonDetail'
 
 export const GET_POKEMON_LIST = gql`
   query pokemons($limit: Int, $offset: Int) {
@@ -103,6 +104,11 @@ function PokemonList() {
 
   return (
     <Container>
+      <IconWrapper
+        onClick={() => Router.push('https://github.com/juandari/pokemon')}
+      >
+        <IconGithub />
+      </IconWrapper>
       <TitleWrapper>
         <LogoPokemon />
         <Button onClick={() => Router.push('/my-pokemon')}>My Pokemon</Button>
